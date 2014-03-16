@@ -17,7 +17,7 @@ function ti = make_gabor_filters(filter_size)
 
     gabor = @(x, y, wx, wy, N) exp(-2*pi*1i.*(x.*wx./N + y.*wy./N));
     
-    % frequency values (a1 / N
+    % frequency values (a1 / N)
     a1 = [-(filter_size-1)/4:(filter_size-1)/4];
     a1 = a1(logical(1 - mod([-(filter_size-1)/4:(filter_size-1)/4],2)));
     a2 = [0:(filter_size-1)/4];
@@ -38,8 +38,3 @@ function ti = make_gabor_filters(filter_size)
         end
     end
 end
-
-% for N = 41, 60 Filters are generated
-% even values of 
-
-%10
