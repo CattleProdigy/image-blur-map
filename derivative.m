@@ -1,17 +1,14 @@
-function out = derivative(in)
-    in = double(in);
-    %del = repmat([-1 0 1], 3, 1);
-    out = conv2(in, del, 'same');
+function gi = derivative(in)
+    in = (double(in));
     [n, m]= size(in);
-    for i = 5:(n-5)
-        for j = 5:(m-5)
-            subplot(2,1,1)
-            imagesc(out(i:i+41,j:j+41));
-            subplot(2,1,2);
-            temp = out(i:i+41,j:j+41);
-            hist(temp(:),1000);
-            pause;
-        end
-    end
+    ti = make_gabor_filters(41);
+    gi = gabor_gradient_field(in, ti);
+%     for i = 1:(n-42)
+%         disp(i);
+%         tic;
+%         for j = 1:(m-42)
+%             gi = gabor_gradient_field(in(i:i+40,j:j+40), ti);
+%         end
+%         toc;
+%     end
 end
-
