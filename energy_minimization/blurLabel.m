@@ -39,6 +39,9 @@ function newLabels = alphaExpand(labels, alpha)
 % alpha: Current class label being expanded
     newLabels = labels;
     
+    % Set node energies for source/sink costs
+    % Nodes originating at alpha have infinite sink cost
+    % Otherwise nodes have 
     
 end
 
