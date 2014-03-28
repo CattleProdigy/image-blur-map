@@ -1,11 +1,11 @@
-function [ coeffs, r_domain ] = fit_psf(ti)
+function [ sig_i_coeffs, r_domain ] = fit_psf(ti)
 
     disc = @(r, ri) double(r <= ri);
     g = fspecial('gaussian');
 
     r_domain = fliplr([0:0.1:8])';
 
-    pq = [-5:5];
+    %pq = [-5:5];
     
     sigma_hi = ti;
     for i = 1:length(r_domain)
@@ -30,18 +30,27 @@ function [ coeffs, r_domain ] = fit_psf(ti)
         end
     end
     
-    coeffs = cell([size(ti,1) size(ti,2)]);
+    sig_i_coeffs = cell([size(ti,1) size(ti,2)]);
     for j = 1:size(ti,1)
         for k = 1:size(ti,2)
             if (isempty(ti{j,k}))
                 continue;
             end
-            fprintf('Frequency: %d, %d', j, k);
-            sigma_r = cell2mat(sigma_hi(:, j,k));
             
-            coeff_guess = 0.0001*randn(length(pq),1);
-            alpha = lsqcurvefit(@(x, xdata) psfmodel(x, xdata,pq), coeff_guess, r_domain, sigma_r);
-            coeffs{j,k} = alpha;
+            sigma_r = cell2mat(sigma_hi(:, j,k));
+            vals = unique(sort(sigma_r));
+            sigma_r(sigma_r == 0) = vals(2).*ones(sum(sigma_r == 0),1); % Clear any zeros;
+            
+            lsigma_r = log(sigma_r);     
+            ws = warning('off','all');  % Turn off warning for overfitting
+            sig_i_coeffs{j,k} = polyfit(r_domain,lsigma_r, 10);
+            warning(ws)  % Turn it back on.
+            
+            %sample_psf = psfmodel(x, r_domain, pq);
+            
+            %coeff_guess = 0.0001*randn(length(pq),1);
+            %alpha = lsqcurvefit(@(x, xdata) psfmodel(x, xdata,pq), coeff_guess, r_domain, sigma_r);
+            %coeffs{j,k} = alpha;
         end
     end
     
@@ -53,15 +62,13 @@ function [ coeffs, r_domain ] = fit_psf(ti)
             
             sigma_r = cell2mat(sigma_hi(:, j,k));
             
+            fit_sigma = exp(polyval(sig_i_coeffs{j,k}, r_domain));
 
-            fit_sigma = psfmodel(coeffs{j,k}, r_domain, pq);
-
-
-            subplot(2,1,1)
-            plot(fit_sigma);
-            subplot(2,1,2)
-            plot(sigma_r);
-            pause;
+%             subplot(2,1,1)
+%             plot(fit_sigma);
+%             subplot(2,1,2)
+%             plot(sigma_r);
+%             pause(0.1);
         end
     end    
 %     
