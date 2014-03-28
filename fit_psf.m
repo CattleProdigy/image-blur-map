@@ -11,13 +11,14 @@ function [ sig_i_coeffs, r_domain ] = fit_psf(ti)
     for i = 1:length(r_domain)
         
         r = r_domain(i);
-        
+
+        % Radius must be positive;
+        if (r == 0)
+            r = 0.1;
+        end
+
         % Generate Sample PSF (Slightly blurred Disc);
-        x = [-r:r];
-        y = x;
-        [xx, yy] = ndgrid(x, y);
-        blur_psf = disc(sqrt(xx.^2 + yy.^2), r);
-        blur_psf = conv2(blur_psf, g,'same');
+        blur_psf = fspecial('disk',r);
 
         % Generate Blur Spectra of the sample PSFs
         for j = 1:size(ti,1)
@@ -43,9 +44,17 @@ function [ sig_i_coeffs, r_domain ] = fit_psf(ti)
             
             lsigma_r = log(sigma_r);     
             ws = warning('off','all');  % Turn off warning for overfitting
-            sig_i_coeffs{j,k} = polyfit(r_domain,lsigma_r, 10);
+            sig_i_coeffs{j,k} = polyfit(r_domain,lsigma_r, 7);
             warning(ws)  % Turn it back on.
-            
+
+%             f = fit (r_domain, lsigma_r, 'rat32');
+% 
+%             subplot(2,1,1)
+%             plot(r_domain, (f(r_domain)));
+%             subplot(2,1,2)
+%             plot(r_domain, log(sigma_r));
+%             pause();
+
             %sample_psf = psfmodel(x, r_domain, pq);
             
             %coeff_guess = 0.0001*randn(length(pq),1);
@@ -64,11 +73,11 @@ function [ sig_i_coeffs, r_domain ] = fit_psf(ti)
             
             fit_sigma = exp(polyval(sig_i_coeffs{j,k}, r_domain));
 
-%             subplot(2,1,1)
-%             plot(fit_sigma);
-%             subplot(2,1,2)
-%             plot(sigma_r);
-%             pause(0.1);
+            subplot(2,1,1)
+            plot(r_domain, log(fit_sigma));
+            subplot(2,1,2)
+            plot(r_domain, log(sigma_r));
+            pause();
         end
     end    
 %     
