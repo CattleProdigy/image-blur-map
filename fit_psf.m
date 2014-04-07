@@ -63,23 +63,23 @@ function [ sig_i_coeffs, r_domain ] = fit_psf(ti)
         end
     end
     
-    for j = 1:size(ti,1)
-        for k = 1:size(ti,2)
-            if (isempty(ti{j,k}))
-                continue;
-            end
-            
-            sigma_r = cell2mat(sigma_hi(:, j,k));
-            
-            fit_sigma = exp(polyval(sig_i_coeffs{j,k}, r_domain));
-
-            subplot(2,1,1)
-            plot(r_domain, log(fit_sigma));
-            subplot(2,1,2)
-            plot(r_domain, log(sigma_r));
-            pause();
-        end
-    end    
+%     for j = 1:size(ti,1)
+%         for k = 1:size(ti,2)
+%             if (isempty(ti{j,k}))
+%                 continue;
+%             end
+%             
+%             sigma_r = cell2mat(sigma_hi(:, j,k));
+%             
+%             fit_sigma = exp(polyval(sig_i_coeffs{j,k}, r_domain));
+% 
+%             subplot(2,1,1)
+%             plot(r_domain, log(fit_sigma));
+%             subplot(2,1,2)
+%             plot(r_domain, log(sigma_r));
+%             pause();
+%         end
+%     end    
 %     
 %     for i = 1:length(r_domain)
 %         temp = squeeze(coeffs(i,:,:));
