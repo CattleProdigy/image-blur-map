@@ -1,4 +1,4 @@
-function gi = gabor_gradient_field(im, ti)
+function [gi sig_ni] = gabor_gradient_field(im, ti)
 
     % Take Image Gradient
     del = [1 -1];
@@ -8,13 +8,20 @@ function gi = gabor_gradient_field(im, ti)
     % store the result in a cell array of the same size and layout
     % as the filters
     gi = ti;
+    sig_ni = cell(size(ti));
     for i = 1:size(ti,1)
         for j = 1:size(ti,2)
             if (isempty(ti{i,j}))
                 continue;
             end
+            
+            filter_gradient = conv2(ti{i,j}, del, 'same');
+            sig_ni{i,j} = sum(sum(abs(filter_gradient).^2));
             gi{i,j} = conv2(gradient, ti{i,j}, 'same');
         end
     end
+    
+    % Take the square magnitude
+    gi = cellfun(@(x) abs(x).^2, gi, 'UniformOutput', false);
 end
 
