@@ -34,23 +34,26 @@ GCO_Expansion(h);
 % Recover labels (radii) and reformat
 serLabels = GCO_GetLabeling(h);
 blurMap = reshape(serLabels,ySize,xSize); % Deserialize radii
+GCO_Delete(h);
 
 end
 
-
 function [neighborMatrix] = secondNeighborMatrix(w,h)
-% Function to generate neighboring node weights
+% Function to generate neighboring node weights for 2nd order neighbor
+% matrix that is unidirectional (upper left triangular)
 % w: Image width
 % h: Image height
-
-    nPixels = w*h; % Compute total length of array
-    % Generate 2nd row and then circulantly generate 1st row
-    nrow2 = [[1 1 1],zeros(1,h-3),[1 0 1],zeros(1,h-3),[1 1 1],zeros(1,h-3),zeros(1,w*h-3)];
-    nrow1 = circshift(nrow2,[0,-1]);
-    % Preallocate giant neighborhood matrix
-    neighborMatrix = zeros(nPixels,nPixels);
-    % Fill in giant matrix
-    for i = 1:nPixels
-        neighborMatrix(i,:) = circshift(nrow1,[0,i-1]);
+% Declare sparse matrix of size N,M
+neighborMatrix = sparse(w*h,w*h);
+    for x = 2:w-1
+        for y = 2:h-1
+           row = zeros(1,m*n);
+           %row = sparse(1,w*h);
+           row(x-1+(y*w)) = 1;
+           row(x-1+(y-1)*w) = 1;
+           row(x-1+(y+1)*w) = 1;
+           row(x+(y-1)*w) = 1;
+           neighborMatrix(x*y,:) = row;
+        end
     end
 end

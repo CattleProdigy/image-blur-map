@@ -57,7 +57,7 @@ function energy = energyFunction(D,lambda0,labels)
     for i = 1:size(labels,1) % Iterate through to compute total energy
         for j = 1:size(labels,2)
             unaryCost = unaryCost + D(i,j,(labels(i,j)));
-            pairwiseCost = pairwiseCost + lsmooth(i,j);
+            pairwiseCost = pairwiseCost + localSmoothness(i,j);
         end
     end
     energy = unaryCost + pairwiseCost;
