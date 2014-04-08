@@ -1,6 +1,8 @@
-im = imread('man-with-cellphone.PNG');
+im = imread('test_patch.jpg');
 im = double(rgb2gray(im));
+im = im./max(max(im));
 
+%%
 start_time = tic;
 
 fprintf('Making filters...\n');
@@ -20,6 +22,9 @@ fprintf('\nFitting Sample PSFs...\n');
 tic;
 [sig_i_coeffs, r_domain] = fit_psf(ti);
 toc;
+
+%%
+likelihood_test(gi, sig_i_coeffs, sig_ni);
 
 %%
 fprintf('\nFinding most likely radii PSFs...\n');

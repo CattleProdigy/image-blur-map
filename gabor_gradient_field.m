@@ -1,4 +1,4 @@
-function [gi sig_ni] = gabor_gradient_field(im, ti)
+function [gi, sig_ni] = gabor_gradient_field(im, ti)
 
     % Take Image Gradient
     del = [1 -1];
@@ -16,7 +16,7 @@ function [gi sig_ni] = gabor_gradient_field(im, ti)
             end
             
             filter_gradient = conv2(ti{i,j}, del, 'same');
-            sig_ni{i,j} = sum(sum(abs(filter_gradient).^2));
+            sig_ni{i,j} = 1.*sum(sum(abs(filter_gradient).^2));
             gi{i,j} = conv2(gradient, ti{i,j}, 'same');
         end
     end
