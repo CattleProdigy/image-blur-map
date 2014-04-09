@@ -1,0 +1,10 @@
+==Blur Coherent Labeling Process==
+* Candidate ML estimate values vectors are convolved with 1D linear filter at each pixel
+* -log of estimate vectors are taken at each pixel
+* Image/filtered ML candidates are pixel serialized as [row 1 row2 row 3 ... row M]
+	- Result is 1xNMx#labels array
+* 2nd order neighborhood sparse matrix is constructed using upper left triangular
+	pairwise potentials (NMxNM sparse matrix) with 4 non-zero relationships per row
+* Unary cost set to ML estimate vector
+* Alpha expansion performed with neighborhood smoothness and unary costs
+* Approx. optimal labeling given the discrete space of blur parameters is given
