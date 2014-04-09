@@ -1,6 +1,4 @@
 function [ti, freqs] = make_gabor_filters(filter_size)
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
 
     x = [-(filter_size-1)/2:filter_size/2];
     y = x;
@@ -25,18 +23,21 @@ function [ti, freqs] = make_gabor_filters(filter_size)
     a10 = [-(filter_size-1)/4:-2];
     a10 = a10(logical(1 - mod([-(filter_size-1)/4:-2],2)));
     
-    ti = cell([length(a2) length(a1)]);
-    freq = cell([length(a2) length(a1)]);
+    ti = zeros([filter_size filter_size ((length(a2)-1)*length(a1)+length(a10))]);
+    filter_count = 1;
+    freqs = zeros([1 2 ((length(a2)-1)*length(a1)+length(a10))]);
     for i = 1:length(a2)
         if (a2(i) == 0)
             for j = 1:length(a10)
-                ti{i,j} = gabor(xx, yy, a10(j), a2(i),filter_size).*gaussian_window;
-                freqs{i,j} = [a10(j), a2(i)];
+                ti(:,:,filter_count) = gabor(xx, yy, a10(j), a2(i),filter_size).*gaussian_window;
+                freqs(:,:,filter_count) = [a10(j), a2(i)];
+                filter_count = filter_count + 1;
             end
         else 
             for j = 1:length(a1)
-                ti{i,j} = gabor(xx, yy, a1(j), a2(i),filter_size).*gaussian_window;
-                freqs{i,j} = [a1(j), a2(i)];
+                ti(:,:,filter_count) = gabor(xx, yy, a1(j), a2(i),filter_size).*gaussian_window;
+                freqs(:,:,filter_count) = [a1(j), a2(i)];
+                filter_count = filter_count + 1;
             end
         end
     end
