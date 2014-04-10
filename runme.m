@@ -14,11 +14,9 @@ tic;
 toc;
 
 %%
-gi = cell(size(ti));
-sig_ni = cell(size(ti));
 fprintf('\nCalculating Gabor Gradient Field...\n');
 tic;
-[gi sig_ni] = gabor_gradient_field(im, ti);
+[gi, sig_ni] = gabor_gradient_field(im, ti);
 toc
 %%
 fprintf('\nFitting Sample PSFs...\n');
