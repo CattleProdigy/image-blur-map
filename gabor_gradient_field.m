@@ -1,4 +1,4 @@
-function [gi, sig_ni] = gabor_gradient_field(im, ti)
+function [gi, sig_ni] = gabor_gradient_field(im, ti, noise)
 
     % Take Image Gradient
     del = [1 -1];
@@ -20,7 +20,7 @@ function [gi, sig_ni] = gabor_gradient_field(im, ti)
         ti_temp = padarray(ti(:,:,i),[0, 1],'circular','both');
         filter_gradient = conv2(ti_temp, del, 'full');
         filter_gradient = filter_gradient(:,2:end-1);
-        sig_ni(:,i) = 1.*sum(sum(abs(filter_gradient).^2));
+        sig_ni(:,i) = noise.*sum(sum(abs(filter_gradient).^2));
     end
     
     

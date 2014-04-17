@@ -3,7 +3,7 @@ if (ndims(im) == 3)
     im = rgb2gray(im);
 end
 im = double (im);
-
+im = im./255 ;
 
 %%
 start_time = tic;
@@ -16,7 +16,7 @@ toc;
 %%
 fprintf('\nCalculating Gabor Gradient Field...\n');
 tic;
-[gi, sig_ni] = gabor_gradient_field(im, ti);
+[gi, sig_ni] = gabor_gradient_field(im, ti, 0.1/(255^2));
 toc
 %%
 fprintf('\nFitting Sample PSFs...\n');
@@ -30,7 +30,7 @@ toc;
 %%
 fprintf('\nFinding most likely radii PSFs...\n');
 tic;
-[r_candidates, p_candidates] = ml_radius(im, gi, sig_i_coeffs, sig_ni);
+[rcons_p, r_candidates, p_candidates] = ml_radius(im, gi, sig_i_coeffs, sig_ni);
 toc;
 
 fprintf('\nTotal ');

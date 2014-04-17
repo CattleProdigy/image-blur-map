@@ -1,10 +1,13 @@
-function [r, p] = ml_iterative(im, gi, sig_i_coeffs, sig_ni, r)
+function [r, p] = ml_iterative(im, gi, sig_i_coeffs, sig_ni, r, show_image)
     close all;
     nfilt = size(sig_i_coeffs,1);
     [m, n] = size(im);
     r_old = round(r.*ones(size(im))); % Initial Conditions
-    s_old = abs(randn(size(im)));
+    r_old2 = zeros(size(im));
+    deriv_old = zeros(size(im));
+    s_old = abs(rand(size(im)));
     
+
     it_max = 20;
     
     derive_coeffs = zeros(nfilt,size(sig_i_coeffs,2)-1);
@@ -12,7 +15,7 @@ function [r, p] = ml_iterative(im, gi, sig_i_coeffs, sig_ni, r)
         derive_coeffs(j,:) = polyder(sig_i_coeffs(j,:));
     end
     
-    for i = 1:35
+    for i = 1:20
         fprintf('ML Iteration: %i\n',i);
       
         
@@ -53,8 +56,10 @@ function [r, p] = ml_iterative(im, gi, sig_i_coeffs, sig_ni, r)
         
         % Estimate R        
         % radius gradient descent
+        
         step_size = 0.0001;
-        beta = 0.2;
+        
+        beta = 1;
         for it = 1:100
             
             fprintf('R Gradient Descent Iteration: %i\n',it);
@@ -65,53 +70,76 @@ function [r, p] = ml_iterative(im, gi, sig_i_coeffs, sig_ni, r)
 
                 sig_i_r = exp(polyval(sig_i_coeffs(j,:), r_old));
 
-                blur_spectrum_deriv = polyval(derive_coeffs(j,:), r_old).*sig_i_r;
+                blur_spectrum_deriv = (polyval(derive_coeffs(j,:), r_old)).*sig_i_r;
 
                 denom = (s.*sig_i_r+sig_ni(j));
                 deriv_sum = deriv_sum - ...
-                    blur_spectrum_deriv.*s.*((gi(:,:,j))./(denom.^2) - ...
-                    1./denom);
+                    blur_spectrum_deriv.*s.*( (gi(:,:,j))./(denom.^2) - 1./denom );
 
             end
 
-            mu = mean(mean(deriv_sum(~isnan(deriv_sum))));
+            mu = nanmean(nanmean(deriv_sum));
             deriv_sum(isnan(deriv_sum)) = mu;
+           
+            r = r_old - step_size.*deriv_sum;
             
-            r = r_old + step_size.*deriv_sum;
+            r(r < 0 | r > 10) = nanmean(nanmean(r));
+            
             step_size = beta*step_size;
-            subplot(2,1,2);
-            imagesc(r);
-            colorbar;
-            drawnow;
+            if (show_image)
+                subplot(2,1,2);
+                imagesc(r);
+                colorbar;
+                drawnow;
+            end
             
             rdiff = sum(sum((r-r_old).^2))/numel(r);
             fprintf('r diff: %g\n', rdiff);
 
-            if (rdiff < 1e-3 && it > 3)
+            if (rdiff < 1e-6 && it > 3)
                 break;
             end
             
+            deriv_old = deriv_sum;
+            r_old2 = r_old;
             r_old = r;
+            
         end
-        subplot(2,1,1)
-        imagesc(s);
-        colorbar;
-        subplot(2,1,2);
-        imagesc(r);
-        colorbar;
-        drawnow;
+
+%         lb = 0.5.*ones(size(im));
+%         up = 9.*ones(size(im));
+%         options = saoptimset('simulannealbnd');
+%         %options = saoptimset(options, 'Display', 'iter');
+%         
+%         for j = 1:m
+%             parfor k = 1:n
+%             [r(j,k),fval,exitFlag,output] = ...
+%                 simulannealbnd(@(x) ml_objfun(x, gi(j,k,:), sig_i_coeffs, sig_ni, s(j,k)),r_old(j,k),0.5,9,options);
+%             end
+%             disp j
+%         end
+%                 
+
+        if (show_image)
+            subplot(2,1,1)
+            imagesc(s);
+            colorbar;
+            subplot(2,1,2);
+            imagesc(r);
+            colorbar;
+            drawnow;
+        end
 
         % Report
         dif = sum(sum((s-s_old).^2))/length(s(:));
         fprintf('diff: %g\n\n', dif);
         
-        if (dif < 0.01)
+        if (dif < 1E-6)
             break;
         end
         
         % Batch update s, r
         s_old = s;
-        r_old = r;
         
     end
     
