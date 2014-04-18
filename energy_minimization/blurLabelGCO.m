@@ -9,7 +9,8 @@ function [blurMap] = blurLabelGCO(inputImage,D,labels)
 
 D = infinityFilter(D); % Filter out very large values
 
-addpath('gco-v3.0\matlab\');
+addpath([pwd ('\energy_minimization\gco-v3.0\matlab\')]);
+
 % Compute Size Parameters
 xSize = size(D,3); % Image x-size
 ySize = size(D,2); % Image y-size
