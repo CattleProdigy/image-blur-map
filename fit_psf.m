@@ -1,9 +1,12 @@
-function [ sig_i_coeffs, r_domain ] = fit_psf(ti)
+function [ sig_i_coeffs, pq ] = fit_psf(ti)
 
-    r_domain = fliplr([0:0.1:8])';
+    r_domain = fliplr([0.1:0.1:8])';
 
     POLY_DEGREE = 8;
     %pq = [-5:5];
+    P = 7;
+    Q = 0;
+    pq = [-Q:P];
     
     sigma_hi = zeros([length(r_domain), size(ti,3)]);
     for i = 1:length(r_domain)
@@ -32,11 +35,19 @@ function [ sig_i_coeffs, r_domain ] = fit_psf(ti)
 %         end
     end
     
-    sig_i_coeffs = zeros(size(ti,3), POLY_DEGREE+1);
+    sig_i_coeffs = zeros(size(ti,3), P+Q+1);
     for j = 1:size(ti,3)
         lsigma_r = log(sigma_hi(:,j));
         %ws = warning('off','all');  % Turn off warning for overfitting
-        sig_i_coeffs(j,:) = polyfit(r_domain,lsigma_r, POLY_DEGREE);
+        
+        X = zeros(length(r_domain), P+Q+1);
+        for i = 1:(P+Q+1)
+            X(:,i) = r_domain.^pq(i);
+        end
+        
+        sig_i_coeffs(j,:) = X\(lsigma_r);
+        
+        %sig_i_coeffs(j,:) = polyfit(r_domain,lsigma_r, POLY_DEGREE);
         %warning(ws)  % Turn it back on.
     end
 

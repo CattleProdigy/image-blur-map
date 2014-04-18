@@ -1,24 +1,26 @@
-function [r, p] = ml_iterative(im, gi, sig_i_coeffs, sig_ni, r, show_image)
+function [r, p] = ml_iterative(im, gi, sig_i_coeffs, sig_ni, r,pq, show_image)
     close all;
     nfilt = size(sig_i_coeffs,1);
     [m, n] = size(im);
     r_old = round(r.*ones(size(im))); % Initial Conditions
-    r_old2 = zeros(size(im));
-    deriv_old = zeros(size(im));
+    r_old2 = round(r.*ones(size(im)));
     s_old = abs(rand(size(im)));
     
 
     it_max = 20;
     
-    derive_coeffs = zeros(nfilt,size(sig_i_coeffs,2)-1);
+    derive_coeffs = zeros(nfilt,size(sig_i_coeffs,2));
+    pq_deriv = pq-1;
     for j = 1:nfilt
-        derive_coeffs(j,:) = polyder(sig_i_coeffs(j,:));
+        derive_coeffs(j,:) = sig_i_coeffs(j,:).*pq;
+        %derive_coeffs(j,:) = polyder(sig_i_coeffs(j,:));
     end
+    
+    V = zeros(m*n, length(pq));
     
     for i = 1:20
         fprintf('ML Iteration: %i\n',i);
       
-        
         % Estimate S
  
 % Vectorized version of fixed point s update (it is slower for some reason)    
@@ -42,7 +44,7 @@ function [r, p] = ml_iterative(im, gi, sig_i_coeffs, sig_ni, r, show_image)
         spectrum_sum = zeros(m,n);
         for j = 1:nfilt
 
-            sig_i_r = exp(polyval(sig_i_coeffs(j,:), r_old));
+            sig_i_r = exp(polyval(fliplr(sig_i_coeffs(j,:)),r_old).*(r_old.^(pq(1))));
 
             rho = (1 + sig_ni(j)./(s_old.*sig_i_r)).^(-2);
             rho_sum = rho_sum + rho;
@@ -60,17 +62,17 @@ function [r, p] = ml_iterative(im, gi, sig_i_coeffs, sig_ni, r, show_image)
         step_size = 0.0001;
         
         beta = 1;
-        for it = 1:100
+        for it = 1:15
             
             fprintf('R Gradient Descent Iteration: %i\n',it);
             
             deriv_sum = 0;
             
             for j = 1:nfilt
+                
+                sig_i_r = exp(polyval(fliplr(sig_i_coeffs(j,:)),r_old).*(r_old.^(pq(1))));
 
-                sig_i_r = exp(polyval(sig_i_coeffs(j,:), r_old));
-
-                blur_spectrum_deriv = (polyval(derive_coeffs(j,:), r_old)).*sig_i_r;
+                blur_spectrum_deriv = (polyval(fliplr(derive_coeffs(j,:)),r_old).*(r_old.^(pq_deriv(1)))).*sig_i_r;
 
                 denom = (s.*sig_i_r+sig_ni(j));
                 deriv_sum = deriv_sum - ...
@@ -78,12 +80,12 @@ function [r, p] = ml_iterative(im, gi, sig_i_coeffs, sig_ni, r, show_image)
 
             end
 
-            mu = nanmean(nanmean(deriv_sum));
-            deriv_sum(isnan(deriv_sum)) = mu;
+%             mu = nanmean(nanmean(deriv_sum));
+%             deriv_sum(isnan(deriv_sum)) = mu;
            
-            r = r_old - step_size.*deriv_sum;
+            r = r_old - step_size.*deriv_sum + 0.95*(r_old - r_old2);
             
-            r(r < 0 | r > 10) = nanmean(nanmean(r));
+%             r(r < 0 | r > 10) = nanmean(nanmean(r));
             
             step_size = beta*step_size;
             if (show_image)
@@ -93,14 +95,13 @@ function [r, p] = ml_iterative(im, gi, sig_i_coeffs, sig_ni, r, show_image)
                 drawnow;
             end
             
-            rdiff = sum(sum((r-r_old).^2))/numel(r);
+            rdiff = nansum(nansum((r-r_old).^2))/numel(isnan(r(:)));
             fprintf('r diff: %g\n', rdiff);
 
-            if (rdiff < 1e-6 && it > 3)
+            if (rdiff < 1e-5 && it > 3)
                 break;
             end
             
-            deriv_old = deriv_sum;
             r_old2 = r_old;
             r_old = r;
             
@@ -134,7 +135,7 @@ function [r, p] = ml_iterative(im, gi, sig_i_coeffs, sig_ni, r, show_image)
         dif = sum(sum((s-s_old).^2))/length(s(:));
         fprintf('diff: %g\n\n', dif);
         
-        if (dif < 1E-6)
+        if (dif < 1E-3)
             break;
         end
         
@@ -145,7 +146,7 @@ function [r, p] = ml_iterative(im, gi, sig_i_coeffs, sig_ni, r, show_image)
     
     p = ones(size(im));
     for i = 1:nfilt
-        sig_i_r = exp(polyval(sig_i_coeffs(i,:), r));
+        sig_i_r = exp(polyval(fliplr(sig_i_coeffs(i,:)),r_old).*(r_old.^(pq(1))));
         p = p.*exppdf(gi(:,:,i), (s.*sig_i_r + sig_ni(i)));
     end
 
