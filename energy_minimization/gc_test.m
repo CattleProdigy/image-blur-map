@@ -3,11 +3,11 @@ close all
 
 labels = 0.1:0.1:8;
 nlabels = length(labels);
-h = 200; w = 200;
+h = 4; w = 4;
 
 D = zeros(nlabels,h,w);
 for j = 1:nlabels
-    D(j,:,:) = (0.8*rand(h,w));
+    D(j,:,:) = (0.2*rand(h,w));
 end
 D(30,h/4:3*h/4,w/4:3*w/4) = D(30,h/4:3*h/4,w/4:3*w/4)+0.8;
 figure(99);

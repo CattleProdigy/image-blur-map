@@ -1,7 +1,7 @@
 % Insert Copyright notice!!!!
 % 
 %%
-function [blurMap] = blurLabelGCO(D,labels)
+function [blurMap] = blurLabelGCO(inputImage,D,labels)
 % inputImage: Blurry input image
 % D: unary node cost: filtered likelihood histogram per pixel (D(r),y,x)
 % rHats: Estimated r-value space being indexed by each z-element of D
@@ -40,7 +40,7 @@ disp(['Alpha-expansion complete in ' mat2str(endTime) 's']);
 serLabels = GCO_GetLabeling(h);
 
 blurMap = reshape(serLabels,ySize,xSize); % Deserialize radii
-blurMap = applyLabels(blurMap, labels);          % Apply actual blur labels
+blurMap = applyLabels(blurMap, labels);   % Apply actual blur labels
 GCO_Delete(h);
 
 % Label overlay on output image
@@ -58,27 +58,52 @@ function [neighborMatrix] = secondNeighborMatrix(w,h)
 disp('Creating Neighbor Matrix');
 neighborMatrix = sparse(w*h,w*h);
 tic;
-B = 100;
-    for x = 2:w-2
-        for y = 2:h-2
-           %row = zeros(w*h,1);
-           row = sparse(w*h,1);
-           row(x-1+(y.*w),1) = B;
-           row(x-1+(y-1).*w,1) = B;
-           row(x-1+(y+1).*w,1) = B;
-           row(x+(y-1).*w,1) = B;
+B = 1000;
+for y = 2:h-1
+    for x = 2:w-1
+            row = sparse(w*h,1);
+            %rowN = x.*y
+            %x.*y -(x+1+(y).*w)
+            
+            %x.*y-(x+1+(y-2).*w)
            
-           row(x+1+(y.*w),1) = B;
-           row(x+1+(y-1).*w,1) = B;
-           row(x+1+(y+1).*w,1) = B;
-           row(x+(y+1).*w,1) = B;
+            row(x+1+(y-2).*w,1) = B;
+            row(x+1+(y-1).*w,1) = B;
+            row(x+1+y.*w,1) = B;
+            row(x+y.*w,1) = B;
+            
+            row(x+(y-2).*w,1) = B;
+            row(x-1+(y-2).*w,1) = B;
+            row(x-1+(y-1).*w,1) = B;
+            row(x-1+y.*w,1) = B;
+            
+            %row(x-1+(y-1).*(w+1),1) = B;
+            %row(x+1+(y-1).*w,1) = B;
+            %row(x+1+(y-2).*w,1) = B;
+            %row(x+1+(y).*w,1) = B;
+            %row(x+(y).*w,1) = B;
+            
+            %row(x-1+(y-1).*w,1) = B;
+            %row(x-1+(y).*w,1) = B;
+            %row(x+(y+1).*w,1) = B;
+            
+%           row(x-1+(y.*w),1) = B;
+%           row(x-1+(y-1).*w,1) = B;
+%           row(x-1+(y+1).*w,1) = B;
+%           row(x+(y-1).*w,1) = B;
+%            
+%           row(x+1+((y-1).*w),1) = B;
+%           row(x+1+(y).*w,1) = B;
+%           row(x+1+(y+1).*w,1) = B;
+%           row(x+(y+1).*w,1) = B;
            
            row = sparse(row);
-           neighborMatrix(:,x.*y) = sparse(row);
-
+           neighborMatrix(:,x+(y-1).*w) = sparse(row);
+           
         end
     end
     neighborMatrix = neighborMatrix.';
+    %spy(neighborMatrix)
     endTime = toc;
     disp(['Neighbor Matrix Generation Complete in ' mat2str(endTime) 's']);
 end
