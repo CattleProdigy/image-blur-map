@@ -1,4 +1,7 @@
 im = imread('flower2.bmp');
+
+imColor = im;
+
 if (ndims(im) == 3)
     im = rgb2gray(im);
 end
@@ -50,7 +53,7 @@ addpath([pwd ('\energy_minimization\')]);
 labels = [0.1:0.1:8];
 D = filterLikelihoods(ps,rs,labels);
 
-blurMap = blurLabelGCO(im,D,labels);
+blurMap = blurLabelGCO(imColor,D,labels);
 
 imagesc(blurMap);
 

@@ -1,5 +1,5 @@
 %%
-function [neighborMatrix] = secondNeighborMatrix(w,h)
+function [neighborMatrix] = secondNeighborMatrix(w,h,colorPenaltyVector)
 % Function to generate neighboring node weights for 2nd order neighbor
 % matrix that is unidirectional (upper left triangular)
 % w: Image width
@@ -10,7 +10,7 @@ neighborMatrix = sparse(w*h,w*h);
 tic;
 B = 500;
 
-diags = B.*ones(w*h, 4);
+diags = B.*ones(w*h, 4).*repmat(colorPenaltyVector,1,4);
 
 neighborMatrix = spdiags(diags, [1 (h) (h+1) (h+2)], neighborMatrix);
 

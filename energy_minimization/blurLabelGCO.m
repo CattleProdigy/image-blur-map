@@ -1,5 +1,6 @@
 % Insert Copyright notice!!!!
 % 
+
 %%
 function [blurMap] = blurLabelGCO(inputImage,D,labels)
 % inputImage: Blurry input image
@@ -7,8 +8,10 @@ function [blurMap] = blurLabelGCO(inputImage,D,labels)
 % rHats: Estimated r-value space being indexed by each z-element of D
 
 
-D = infinityFilter(D); % Filter out very large values
+%D = infinityFilter(D); % Filter out very large values
 
+D(D > 2^23) = 2^23; % Saturate values to 2^23
+colorPenalties = computeColorPenalties(inputImage,1);
 addpath([pwd ('\energy_minimization\gco-v3.0\matlab\')]);
 
 % Compute Size Parameters
@@ -22,9 +25,11 @@ h = GCO_Create(nPixels,length(labels)); % GCO Object
 
 % Serialize cost arrays to be depth x nPixels in size
 Dser = reshape(D,depth,nPixels); % Note, check that this comes out correctly
-
+size(colorPenalties)
+nPixels
+penaltySer = reshape(colorPenalties,1,nPixels).';
 % Generate neighborhood weighting
-NeighborArray = secondNeighborMatrix(xSize,ySize);
+NeighborArray = secondNeighborMatrix(xSize,ySize,penaltySer);
 
 % Set cost parameters and graph relationships
 GCO_SetDataCost(h,Dser);
@@ -50,7 +55,6 @@ colorbar;
 end
 
 
-
 %%
 function [radiiMap] = applyLabels(indexMap, labels)
 % Function that applies actual radius values to blur map based on indices
@@ -62,17 +66,14 @@ function [radiiMap] = applyLabels(indexMap, labels)
     end
 end
 
-%% 
-function [filteredD] = infinityFilter(D)
-% Function to saturate the -log likelihood candidates
-    filteredD = D;
-    for i = 1:size(D,1)
-        for j = 1:size(D,2)
-            for k = 1:size(D,3)
-                if (D(i,j,k) > 2^23)
-                    filteredD(i,j,k) = 2^23;
-                end
-            end
-        end
+%%
+function [colorPenalties] = computeColorPenalties(inputImage,varLambda)
+% Function to compute local color roughness penalty (for color images only)
+    colorPenalties = ones(size(inputImage,1),size(inputImage,2));
+    if(size(inputImage) == 3)
+        penaltyFilter = [-1 -1 -1; -1 8 -1; -1 -1 -1]./8; 
+        filtPenalties = imfilter(inputImage,penaltyFilter);  % Filter color channel differences
+        colorPenalties(:,:) = exp(-1.*sqrt(squeeze(filtPenalties(:,:,1)).^2 + squeeze(filtPenalties(:,:,2)).^2 + squeeze(filtPenalties(:,:,3).^2))./(2*varLambda)); % Take 2-norm penalty along channels
     end
 end
+
