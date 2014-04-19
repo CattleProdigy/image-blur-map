@@ -1,10 +1,10 @@
 function [ sig_i_coeffs, pq ] = fit_psf(ti)
 
-    r_domain = fliplr([0.1:0.1:8])';
+    r_domain = fliplr([0.6:0.1:8])';
 
     POLY_DEGREE = 8;
     %pq = [-5:5];
-    P = 7;
+    P = 9;
     Q = 0;
     pq = [-Q:P];
     
@@ -12,11 +12,6 @@ function [ sig_i_coeffs, pq ] = fit_psf(ti)
     for i = 1:length(r_domain)
         
         r = r_domain(i);
-
-        % Radius must be positive;
-        if (r == 0)
-            r = 0.1;
-        end
 
         % Generate Sample PSF (Slightly blurred Disc);
         blur_psf = fspecial('disk',r);
@@ -46,6 +41,14 @@ function [ sig_i_coeffs, pq ] = fit_psf(ti)
         end
         
         sig_i_coeffs(j,:) = X\(lsigma_r);
+        
+        sig_i_r = exp(polyval(fliplr(sig_i_coeffs(j,:)),r_domain).*(r_domain.^(pq(1))));
+%         
+%         subplot(2,1,1);
+%         plot(sigma_hi(:,j));
+%         subplot(2,1,2);
+%         plot(sig_i_r);
+%         pause;
         
         %sig_i_coeffs(j,:) = polyfit(r_domain,lsigma_r, POLY_DEGREE);
         %warning(ws)  % Turn it back on.

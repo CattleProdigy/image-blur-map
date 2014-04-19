@@ -8,7 +8,7 @@ function [neighborMatrix] = secondNeighborMatrix(w,h)
 disp('Creating Neighbor Matrix');
 neighborMatrix = sparse(w*h,w*h);
 tic;
-B = 50000;
+B = 500;
 
 diags = B.*ones(w*h, 4);
 
@@ -57,6 +57,7 @@ neighborMatrix = spdiags(diags, [1 (h) (h+1) (h+2)], neighborMatrix);
 %            
 %         end
 %     end
+
 
     endTime = toc;
     disp(['Neighbor Matrix Generation Complete in ' mat2str(endTime) 's']);

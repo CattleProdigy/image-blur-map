@@ -4,7 +4,7 @@ function [r, p] = ml_iterative(im, gi, sig_i_coeffs, sig_ni, r,pq, show_image)
     [m, n] = size(im);
     r_old = round(r.*ones(size(im))); % Initial Conditions
     r_old2 = round(r.*ones(size(im)));
-    s_old = abs(rand(size(im)));
+    s_old = 5.*abs(ones(size(im)));
     
 
     it_max = 20;
@@ -15,9 +15,7 @@ function [r, p] = ml_iterative(im, gi, sig_i_coeffs, sig_ni, r,pq, show_image)
         derive_coeffs(j,:) = sig_i_coeffs(j,:).*pq;
         %derive_coeffs(j,:) = polyder(sig_i_coeffs(j,:));
     end
-    
-    V = zeros(m*n, length(pq));
-    
+
     for i = 1:20
         fprintf('ML Iteration: %i\n',i);
       
@@ -49,20 +47,26 @@ function [r, p] = ml_iterative(im, gi, sig_i_coeffs, sig_ni, r,pq, show_image)
             rho = (1 + sig_ni(j)./(s_old.*sig_i_r)).^(-2);
             rho_sum = rho_sum + rho;
 
-            spectrum_sum = spectrum_sum + rho.*(gi(:,:,j) - sig_ni(j))./(sig_i_r);
+            spectrum_sum = spectrum_sum + rho.*abs(gi(:,:,j) - sig_ni(j))./(sig_i_r);
+%             imagesc(gi(:,:,j) - sig_ni(j));
+%             colorbar;
+%             pause;
         end
-        s = (1./rho_sum).*spectrum_sum;
-
-        mu = mean(mean(s(~isnan(s))));
-        s(isnan(s)) = mu;
+        s = spectrum_sum./rho_sum;
+%         s(s<0) = 0;
+% 
+% 
+%         mu = mean(mean(s(~isnan(s))));
+%         s(s<0) = mu;
+%         s(isnan(s)) = mu;
         
         % Estimate R        
         % radius gradient descent
         
-        step_size = 0.0001;
+        step_size = 0.00005;
         
         beta = 1;
-        for it = 1:15
+        for it = 1:55
             
             fprintf('R Gradient Descent Iteration: %i\n',it);
             
@@ -77,23 +81,29 @@ function [r, p] = ml_iterative(im, gi, sig_i_coeffs, sig_ni, r,pq, show_image)
                 denom = (s.*sig_i_r+sig_ni(j));
                 deriv_sum = deriv_sum - ...
                     blur_spectrum_deriv.*s.*( (gi(:,:,j))./(denom.^2) - 1./denom );
+                
+                if (any(isnan(deriv_sum(:))) || any(isinf(deriv_sum(:))))
+                        disp('whoops1');
+                end
 
             end
 
 %             mu = nanmean(nanmean(deriv_sum));
 %             deriv_sum(isnan(deriv_sum)) = mu;
-           
-            r = r_old - step_size.*deriv_sum + 0.95*(r_old - r_old2);
+            if (any(isnan(r(:))) || any(isinf(r(:))))
+                    disp('whoops2');
+            end
+            r = r_old - step_size.*deriv_sum + 0.80*(r_old - r_old2);
             
 %             r(r < 0 | r > 10) = nanmean(nanmean(r));
             
-            step_size = beta*step_size;
-            if (show_image)
-                subplot(2,1,2);
-                imagesc(r);
-                colorbar;
-                drawnow;
-            end
+%             step_size = beta*step_size;
+%             if (show_image)
+%                 subplot(2,1,2);
+%                 imagesc(r);
+%                 colorbar;
+%                 drawnow;
+%             end
             
             rdiff = nansum(nansum((r-r_old).^2))/numel(isnan(r(:)));
             fprintf('r diff: %g\n', rdiff);
@@ -135,7 +145,7 @@ function [r, p] = ml_iterative(im, gi, sig_i_coeffs, sig_ni, r,pq, show_image)
         dif = sum(sum((s-s_old).^2))/length(s(:));
         fprintf('diff: %g\n\n', dif);
         
-        if (dif < 1E-3)
+        if (dif < 1E-4)
             break;
         end
         
