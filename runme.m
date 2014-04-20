@@ -1,6 +1,7 @@
-im = imread('flower2.bmp');
+%im = imread('flower2.bmp');
+im = imread('blurry_buildings.bmp');
 
-imColor = im;
+imColor = rgb2gray(im);
 
 if (ndims(im) == 3)
     im = rgb2gray(im);

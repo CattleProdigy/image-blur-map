@@ -25,9 +25,7 @@ h = GCO_Create(nPixels,length(labels)); % GCO Object
 
 % Serialize cost arrays to be depth x nPixels in size
 Dser = reshape(D,depth,nPixels); % Note, check that this comes out correctly
-size(colorPenalties)
-nPixels
-penaltySer = reshape(colorPenalties,1,nPixels).';
+penaltySer = reshape(colorPenalties,1,nPixels).'; % Serialize color penalty
 % Generate neighborhood weighting
 NeighborArray = secondNeighborMatrix(xSize,ySize,penaltySer);
 

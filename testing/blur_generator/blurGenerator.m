@@ -23,17 +23,20 @@ function [blurMap, noise, blurredImage] = blurGenerator(inputImage, blurSpace, n
     
     figure(1)
     subplot(1,2,1);
-    imagesc(inputImage);
+    %imagesc(inputImage);
+    imshow(inputImage);
     axis equal;
     colormap('gray');
     colorbar;
     subplot(1,2,2);
-    imagesc(blurredImage);
+    %imagesc(blurredImage);
+    imshow(blurredImage);
     axis equal;
-    colormap('gray');
-    colorbar;
+    %colormap('gray');
+    %colorbar;
     figure(2);
     %imshow(blurMap./max(max(blurMap)));
+    size(blurMap)
     imagesc(blurMap);
     colorbar;
 end
@@ -46,8 +49,16 @@ function [blurImg] = blurByMap(inputImage, blurMap, blurSpace)
         r = blurSpace(i);
         psf = fspecial('disk',r);
         %psf = fspecial('gaussian',[r,r]);
-        blurTemp = conv2(inputImage,psf,'same');
-        mask = (blurMap == blurSpace(i));
+        %blurTemp = conv2(inputImage,psf,'same');
+        blurTemp = imfilter(inputImage,psf);
+        flatmask = (blurMap == blurSpace(i));
+        if(size(inputImage,3) > 1)
+            mask(:,:,1) = flatmask;
+            mask(:,:,2) = flatmask;
+            mask(:,:,3) = flatmask;
+        else
+            mask = flatMask;
+        end
         blurImg = blurImg + mask.*blurTemp; % Mask
     end
     
@@ -57,9 +68,9 @@ function [blurMap] = generateBlurMap(imSize,blurSpace)
 % Generates an IID random field and then median filters it to get clusters
     xsize = imSize(2);
     ysize = imSize(1);
-    blurMap = blurSpace(1)*ones(imSize);
+    blurMap = blurSpace(1)*ones(imSize(1),imSize(2));
     
-    blurMap = drawCircle(blurMap, size(blurMap,2)/2, size(blurMap,1)/2,20,5);
+    blurMap = drawCircle(blurMap, round(size(blurMap,2)/2), round(size(blurMap,1)/2),20,5);
     for j = blurSpace
         for k = 1:round(100*rand)
             blurMap = drawCircle(blurMap,round(xsize*rand),round(ysize*rand),round(35*rand),j);
