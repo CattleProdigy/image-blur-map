@@ -4,7 +4,7 @@ im1 = imfilter(128+80*randn(100,100),fspecial('disk',6),'symmetric');
 im2 = imfilter(128+80*randn(100,100),fspecial('disk',3),'symmetric');
 im = [im1;im2];
 im(im<0) = 0; im(im>255) = 255;
-imColor = rgb2gray(im);
+imColor = im;
 
 if (ndims(im) == 3)
     im = rgb2gray(im);
