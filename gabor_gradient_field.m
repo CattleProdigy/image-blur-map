@@ -17,7 +17,7 @@ function [gi, sig_ni] = gabor_gradient_field(im, ti, noise)
     
     for i = 1:size(ti,3)
         gi(:,:,i) = abs(conv2(grad, ti(:,:,i), 'same')).^2;
-        ti_temp = padarray(ti(:,:,i),[0, 1],'circular','both');
+        ti_temp = padarray(ti(:,:,i),[0, 1],'symmetric','both');
         filter_gradient = conv2(ti_temp, del, 'full');
         filter_gradient = filter_gradient(:,2:end-1);
         sig_ni(:,i) = noise.*sum(sum(abs(filter_gradient).^2));

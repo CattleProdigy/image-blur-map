@@ -4,19 +4,19 @@ function [r, p] = ml_iterative(im, gi, sig_i_coeffs, sig_ni, r,pq, show_image)
     [m, n] = size(im);
     r_old = round(r.*ones(size(im))); % Initial Conditions
     r_old2 = round(r.*ones(size(im)));
-    s_old = 5.*abs(ones(size(im)));
+    s_old = 1.*abs(randn(size(im)));
     
 
     it_max = 20;
     
-    derive_coeffs = zeros(nfilt,size(sig_i_coeffs,2));
-    pq_deriv = pq-1;
+    derive_coeffs = zeros(nfilt,size(sig_i_coeffs,2)-1);
+    %pq_deriv = pq-1;
     for j = 1:nfilt
-        derive_coeffs(j,:) = sig_i_coeffs(j,:).*pq;
-        %derive_coeffs(j,:) = polyder(sig_i_coeffs(j,:));
+        %derive_coeffs(j,:) = sig_i_coeffs(j,:).*pq;
+        derive_coeffs(j,:) = polyder(sig_i_coeffs(j,:));
     end
 
-    for i = 1:20
+    for i = 1:50
         fprintf('ML Iteration: %i\n',i);
       
         % Estimate S
@@ -42,7 +42,8 @@ function [r, p] = ml_iterative(im, gi, sig_i_coeffs, sig_ni, r,pq, show_image)
         spectrum_sum = zeros(m,n);
         for j = 1:nfilt
 
-            sig_i_r = exp(polyval(fliplr(sig_i_coeffs(j,:)),r_old).*(r_old.^(pq(1))));
+            sig_i_r = exp(polyval(sig_i_coeffs(j,:),r_old));
+            %sig_i_r = exp(polyval(fliplr(sig_i_coeffs(j,:)),r_old).*(r_old.^(pq(1))));
 
             rho = (1 + sig_ni(j)./(s_old.*sig_i_r)).^(-2);
             rho_sum = rho_sum + rho;
@@ -63,21 +64,21 @@ function [r, p] = ml_iterative(im, gi, sig_i_coeffs, sig_ni, r,pq, show_image)
         % Estimate R        
         % radius gradient descent
         
-        step_size = 0.00005;
+        step_size = 0.00001;
         
-        beta = 1;
-        for it = 1:55
+        for it = 1:2000
             
             fprintf('R Gradient Descent Iteration: %i\n',it);
             
             deriv_sum = 0;
             
             for j = 1:nfilt
+                sig_i_r = exp(polyval(sig_i_coeffs(j,:),r_old));
+                %sig_i_r = exp(polyval(fliplr(sig_i_coeffs(j,:)),r_old).*(r_old.^(pq(1))));
+
+                blur_spectrum_deriv = polyval(derive_coeffs(j,:),r_old).*sig_i_r;
+                %blur_spectrum_deriv = (polyval(fliplr(derive_coeffs(j,:)),r_old).*(r_old.^(pq_deriv(1)))).*sig_i_r;
                 
-                sig_i_r = exp(polyval(fliplr(sig_i_coeffs(j,:)),r_old).*(r_old.^(pq(1))));
-
-                blur_spectrum_deriv = (polyval(fliplr(derive_coeffs(j,:)),r_old).*(r_old.^(pq_deriv(1)))).*sig_i_r;
-
                 denom = (s.*sig_i_r+sig_ni(j));
                 deriv_sum = deriv_sum - ...
                     blur_spectrum_deriv.*s.*( (gi(:,:,j))./(denom.^2) - 1./denom );
@@ -93,7 +94,7 @@ function [r, p] = ml_iterative(im, gi, sig_i_coeffs, sig_ni, r,pq, show_image)
             if (any(isnan(r(:))) || any(isinf(r(:))))
                     disp('whoops2');
             end
-            r = r_old - step_size.*deriv_sum + 0.80*(r_old - r_old2);
+            r = r_old - step_size.*deriv_sum + 0.85*(r_old - r_old2);
             
 %             r(r < 0 | r > 10) = nanmean(nanmean(r));
             
@@ -108,7 +109,7 @@ function [r, p] = ml_iterative(im, gi, sig_i_coeffs, sig_ni, r,pq, show_image)
             rdiff = nansum(nansum((r-r_old).^2))/numel(isnan(r(:)));
             fprintf('r diff: %g\n', rdiff);
 
-            if (rdiff < 1e-5 && it > 3)
+            if (rdiff < 1e-7 && it > 1)
                 break;
             end
             
@@ -145,7 +146,7 @@ function [r, p] = ml_iterative(im, gi, sig_i_coeffs, sig_ni, r,pq, show_image)
         dif = sum(sum((s-s_old).^2))/length(s(:));
         fprintf('diff: %g\n\n', dif);
         
-        if (dif < 1E-4)
+        if (dif < 1E-8)
             break;
         end
         
@@ -156,7 +157,8 @@ function [r, p] = ml_iterative(im, gi, sig_i_coeffs, sig_ni, r,pq, show_image)
     
     p = ones(size(im));
     for i = 1:nfilt
-        sig_i_r = exp(polyval(fliplr(sig_i_coeffs(i,:)),r_old).*(r_old.^(pq(1))));
+        sig_i_r = exp(polyval(sig_i_coeffs(i,:),r));
+        %sig_i_r = exp(polyval(fliplr(sig_i_coeffs(i,:)),r_old).*(r_old.^(pq(1))));
         p = p.*exppdf(gi(:,:,i), (s.*sig_i_r + sig_ni(i)));
     end
 
