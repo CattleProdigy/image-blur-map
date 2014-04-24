@@ -5,10 +5,7 @@
 function [blurMap] = blurLabelGCO(inputImage,D,labels)
 % inputImage: Blurry input image
 % D: unary node cost: filtered likelihood histogram per pixel (D(r),y,x)
-% rHats: Estimated r-value space being indexed by each z-element of D
-
-
-%D = infinityFilter(D); % Filter out very large values
+% labels: Estimated r-value space being indexed by each z-element of D
 
 D(D > 2^23) = 2^23; % Saturate values to 2^23
 colorPenalties = computeColorPenalties(inputImage,1);

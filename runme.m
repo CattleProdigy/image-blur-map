@@ -1,6 +1,9 @@
 %im = imread('flower2.bmp');
 im = imread('blurry_buildings.bmp');
-
+im1 = imfilter(128+80*randn(100,100),fspecial('disk',6),'symmetric');
+im2 = imfilter(128+80*randn(100,100),fspecial('disk',3),'symmetric');
+im = [im1;im2];
+im(im<0) = 0; im(im>255) = 255;
 imColor = rgb2gray(im);
 
 if (ndims(im) == 3)
@@ -9,10 +12,12 @@ end
 im = double (im);
 im = im./255 ;
 
-h = fspecial('disk',5');
-im2 = padarray(im,[5,5],'symmetric','both');
-im = conv2(im2,h,'same');
-im = im(6:end-5,6:end-5);
+% h = fspecial('disk',5');
+% im2 = padarray(im,[5,5],'symmetric','both');
+% im = conv2(im2,h,'same');
+% im = im(6:end-5,6:end-5);
+
+
 
 %%
 start_time = tic;
@@ -25,12 +30,12 @@ toc;
 %%
 fprintf('\nCalculating Gabor Gradient Field...\n');
 tic;
-[gi, sig_ni] = gabor_gradient_field(im, ti, 0.00001/(255^2));
+[gi, sig_ni] = gabor_gradient_field(im, ti, 0.001/(255^2));
 toc
 %%
 fprintf('\nFitting Sample PSFs...\n');
 tic;
-[sig_i_coeffs, pq] = fit_psf(ti);
+[sig_i_coeffs, pq] = fit_psf2(ti);
 toc;
 
 % %%
@@ -61,5 +66,4 @@ imagesc(blurMap);
 fprintf('\nTotal ');
 toc(start_time);
 
-
-
+plot_ml_estimates;

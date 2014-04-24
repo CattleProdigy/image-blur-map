@@ -2,7 +2,7 @@ function [ sig_i_coeffs, pq ] = fit_psf(ti)
 
     r_domain = fliplr([0.6:0.1:8])';
 
-    POLY_DEGREE = 8;
+    %POLY_DEGREE = 8;
     %pq = [-5:5];
     P = 9;
     Q = 0;
