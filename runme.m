@@ -4,11 +4,16 @@ im1 = imfilter(128+80*randn(100,100),fspecial('disk',6),'symmetric');
 im2 = imfilter(128+80*randn(100,100),fspecial('disk',3),'symmetric');
 im = [im1;im2];
 im(im<0) = 0; im(im>255) = 255;
-imColor = im;
 
+
+im = imread('birdistheword2.bmp');
+
+
+imColor = im;
 if (ndims(im) == 3)
     im = rgb2gray(im);
 end
+
 im = double (im);
 im = im./255 ;
 
@@ -30,7 +35,9 @@ toc;
 %%
 fprintf('\nCalculating Gabor Gradient Field...\n');
 tic;
-[gi, sig_ni] = gabor_gradient_field(im, ti, 0.001/(255^2));
+nvar = 0.15/(255^2);
+nvar = 1E-4;
+[gi, sig_ni] = gabor_gradient_field(im, ti,nvar);
 toc
 %%
 fprintf('\nFitting Sample PSFs...\n');
@@ -61,9 +68,11 @@ D = filterLikelihoods(ps,rs,labels);
 
 blurMap = blurLabelGCO(imColor,D,labels);
 
-imagesc(blurMap);
+%imagesc(blurMap);
 
 fprintf('\nTotal ');
 toc(start_time);
 
 plot_ml_estimates;
+
+compute_rmse;

@@ -2,9 +2,9 @@ function [ sig_i_coeffs, pq ] = fit_psf2(ti)
 
     r_domain = fliplr([0.6:0.1:8])';
 
-    POLY_DEGREE = 9;
+    POLY_DEGREE = 4;
     %pq = [-5:5];
-    P = 8;
+    P = 4;
     Q = 0;
     pq = [-Q:P];
     
@@ -14,7 +14,8 @@ function [ sig_i_coeffs, pq ] = fit_psf2(ti)
         r = r_domain(i);
 
         % Generate Sample PSF (Slightly blurred Disc);
-        blur_psf = fspecial('disk',r);
+        %blur_psf = fspecial('disk',r);
+        blur_psf = fspecial('gaussian',ceil(2.*r),r);
         
         if (r < 0.6)
             blur_psf = zeros(17,17);

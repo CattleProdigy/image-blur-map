@@ -16,7 +16,7 @@ function [r, p] = ml_iterative(im, gi, sig_i_coeffs, sig_ni, r,pq, show_image)
         derive_coeffs(j,:) = polyder(sig_i_coeffs(j,:));
     end
 
-    for i = 1:50
+    for i = 1:150
         fprintf('ML Iteration: %i\n',i);
       
         % Estimate S
@@ -109,7 +109,7 @@ function [r, p] = ml_iterative(im, gi, sig_i_coeffs, sig_ni, r,pq, show_image)
             rdiff = nansum(nansum((r-r_old).^2))/numel(isnan(r(:)));
             fprintf('r diff: %g\n', rdiff);
 
-            if (rdiff < 1e-6 && it > 1)
+            if (rdiff < 1E-6 && it > 3)
                 break;
             end
             
@@ -146,7 +146,7 @@ function [r, p] = ml_iterative(im, gi, sig_i_coeffs, sig_ni, r,pq, show_image)
         dif = sum(sum((s-s_old).^2))/length(s(:));
         fprintf('diff: %g\n\n', dif);
         
-        if (dif < 1E-7)
+        if (dif < 1E-4)
             break;
         end
         
