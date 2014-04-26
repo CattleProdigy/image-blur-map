@@ -1,0 +1,6 @@
+B = 1000
+step_size = 0.0001;
+it = 1:200
+for i = 1:8
+POLY_DEGREE = 4;
+0.85*(r_old - r_old2);
