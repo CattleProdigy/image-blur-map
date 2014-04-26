@@ -8,7 +8,7 @@ function [neighborMatrix] = secondNeighborMatrix(w,h,colorPenaltyVector)
 disp('Creating Neighbor Matrix');
 neighborMatrix = sparse(w*h,w*h);
 tic;
-B = 10000;
+B = 10;
 
 diags = B.*ones(w*h, 4).*repmat(colorPenaltyVector,1,4);
 

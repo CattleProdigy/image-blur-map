@@ -1,9 +1,4 @@
-%im = imread('flower2.bmp');
-im = imread('blurry_buildings.bmp');
-im1 = imfilter(128+80*randn(100,100),fspecial('disk',6),'symmetric');
-im2 = imfilter(128+80*randn(100,100),fspecial('disk',3),'symmetric');
-im = [im1;im2];
-im(im<0) = 0; im(im>255) = 255;
+im = imread('flower2.bmp');
 imColor = im;
 
 if (ndims(im) == 3)
@@ -11,11 +6,21 @@ if (ndims(im) == 3)
 end
 im = double (im);
 im = im./255 ;
-
+%im = imresize(im,0.5);
+% 
 % h = fspecial('disk',5');
 % im2 = padarray(im,[5,5],'symmetric','both');
-% im = conv2(im2,h,'same');
+% im = conv2(im2+1e-7.*randn(size(im2)),h,'same');
 % im = im(6:end-5,6:end-5);
+% 
+
+x = 1:256; y = x;
+[xx yy ] = ndgrid(x,y);
+blurmap= 3.*xx./256 + yy./256 + 1;
+blurmap_quant = round(blurmap.*10)./10;
+
+imblur = blurByMap(im,blurmap_quant, unique(blurmap_quant));
+im = imblur;
 
 
 
@@ -30,12 +35,12 @@ toc;
 %%
 fprintf('\nCalculating Gabor Gradient Field...\n');
 tic;
-[gi, sig_ni] = gabor_gradient_field(im, ti, 0.001/(255^2));
+[gi, sig_ni] = gabor_gradient_field(im, ti, 1E-6);
 toc
 %%
 fprintf('\nFitting Sample PSFs...\n');
 tic;
-[sig_i_coeffs, pq] = fit_psf2(ti);
+[sig_i_coeffs, pq, Ss] = fit_psf2(ti);
 toc;
 
 % %%
@@ -44,7 +49,7 @@ toc;
 %%
 fprintf('\nFinding most likely radii PSFs...\n');
 tic;
-[rcons_p, r_candidates, p_candidates] = ml_radius(im, gi, sig_i_coeffs, sig_ni, pq);
+[rcons_p, r_candidates, p_candidates] = ml_radius(im, gi, sig_i_coeffs, sig_ni, pq,Ss);
 toc;
 
 [ps, idx] =sort(p_candidates,3);
@@ -59,7 +64,7 @@ addpath([pwd ('\energy_minimization\')]);
 labels = [0.1:0.1:8];
 D = filterLikelihoods(ps,rs,labels);
 
-blurMap = blurLabelGCO(imColor,D,labels);
+blurMap = blurLabelGCO(im,D,labels);
 
 imagesc(blurMap);
 

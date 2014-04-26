@@ -3,8 +3,14 @@ function [blurImg] = blurByMap(inputImage, blurMap, blurSpace)
     blurImg = zeros(size(inputImage));
     % Perform and mask multiple convolutions for fast computation 
     for i = 1:length(blurSpace)
+        
         r = blurSpace(i);
-        psf = fspecial('disk',r);
+        
+        if (r>0.6)
+            psf = fspecial('gaussian',ceil(4.*r), r);
+        else
+            psf = [1];    
+        end
         %psf = fspecial('gaussian',[r,r]);
         %blurTemp = conv2(inputImage,psf,'same');
         blurTemp = double(imfilter(inputImage,psf,'symmetric'));

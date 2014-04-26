@@ -3,23 +3,25 @@ function [gi, sig_ni] = gabor_gradient_field(im, ti, noise)
     % Take Image Gradient
     del = [1 -1];
     
-    im2 = padarray(im,[0,1],'symmetric','both');
-    grad = conv2(im2, del, 'valid');
-    grad = grad(:,1:end-1);
+    im2 = padarray(im,[0,2],'symmetric','both');
+    grad = conv2(im2, del, 'full');
+    grad = grad(:,3:end-3);
+
     
     
     % Convolve the gradient field with each filter and
     % store the result in a cell array of the same size and layout
     % as the filters
-    
     gi = zeros([size(im) size(ti,3)]);
     sig_ni = zeros([1, size(ti,3)]);
     
     for i = 1:size(ti,3)
-        gi(:,:,i) = abs(conv2(grad, ti(:,:,i), 'same')).^2;
-        ti_temp = padarray(ti(:,:,i),[0, 1],'symmetric','both');
-        filter_gradient = conv2(ti_temp, del, 'full');
-        filter_gradient = filter_gradient(:,2:end-1);
+        
+        gi(:,:,i) = abs(imfilter(grad,ti(:,:,i),'symmetric','same')).^2;
+        filter_gradient = imfilter(ti(:,:,i),del,'symmetric','same');
+%         ti_temp = padarray(ti(:,:,i),[0, 1],'symmetric','both');
+%         filter_gradient = conv2(ti_temp, del, 'full');
+%         filter_gradient = filter_gradient(:,2:end-1);
         sig_ni(:,i) = noise.*sum(sum(abs(filter_gradient).^2));
     end
     
