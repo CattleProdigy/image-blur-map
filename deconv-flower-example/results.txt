@@ -1,0 +1,5 @@
+BlurMap NRMSE: 0.77
+Blurred Image NMRSE: 0.6271
+Deblurred Image NMRSE: 0.3758
+
+Lucy-Richardson Deblur
