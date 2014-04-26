@@ -28,7 +28,7 @@ NeighborArray = secondNeighborMatrix(xSize,ySize,penaltySer);
 
 % Set cost parameters and graph relationships
 GCO_SetDataCost(h,Dser);
-
+GCO_SetSmoothCost(h,10*(generateSmoothCost(labels)));
 GCO_SetNeighbors(h,NeighborArray);
 
 % Run alpha-expansion on graph
@@ -45,6 +45,7 @@ blurMap = applyLabels(blurMap, labels);   % Apply actual blur labels
 GCO_Delete(h);
 
 % Label overlay on output image
+figure;
 imagesc(blurMap);
 colorbar;
 end
@@ -71,4 +72,5 @@ function [colorPenalties] = computeColorPenalties(inputImage,varLambda)
         colorPenalties(:,:) = exp(-1.*sqrt(squeeze(filtPenalties(:,:,1)).^2 + squeeze(filtPenalties(:,:,2)).^2 + squeeze(filtPenalties(:,:,3).^2))./(2*varLambda)); % Take 2-norm penalty along channels
     end
 end
+
 
